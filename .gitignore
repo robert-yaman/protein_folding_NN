@@ -1,0 +1,4 @@
+*.pyc
+*.tmp*
+data/cullpdb+profile_6133_filtered.npy
+data/data/cb513+profile_split1.npy
