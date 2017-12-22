@@ -9,7 +9,7 @@ def cnns(inputs, training):
 
 	# Add dimensions to the start and end of the tensor for |batch| and 
 	# |channels| params.
-	inputs_expanded = tf.expand_dims(tf.expand_dims(inputs, 2), 0)
+	inputs_expanded = tf.expand_dims(tf.expand_dims(inputs, -1), 0)
 
 	# We can't have different padding styles for different dimensions, we we
 	# manually add padding to dim=0 and use VALID style.
@@ -49,5 +49,8 @@ def cnns(inputs, training):
 	conv_layers = [tf.contrib.layers.batch_norm(layer, center=True, scale=True,
 		is_training=training) for layer in conv_layers]		
 
-	return tf.concat(conv_layers, axis=1)
+	concat_layer = tf.concat(conv_layers, axis=1)
+
+	return tf.contrib.layers.batch_norm(concat_layer, center=True, scale=True,
+		is_training=training)
 	
