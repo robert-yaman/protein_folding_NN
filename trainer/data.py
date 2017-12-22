@@ -11,8 +11,8 @@ def _get_data(path):
 	np_data = np_data.reshape(len(np_data), 700, 57)
 
 	features = np_data[...,  :22]
-	# does this go to 30 or 31?
-		# 31 because there is an extra value for features and labels for blanks
+	# Goes to 31 because there is an extra value in features and labels for 
+	# blanks.
 	labels = np_data[..., 22 : 31]
 
 	dataset = tf.data.Dataset.from_tensor_slices((features, labels))
@@ -21,5 +21,5 @@ def _get_data(path):
 
 	example = tf.cast(next_element[0], dtype=tf.float32)
 	label = tf.cast(next_element[1], dtype=tf.float32)
-	
+
 	return example, label
