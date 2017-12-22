@@ -1,6 +1,5 @@
 import tensorflow as tf
 
-import data
 import embedding
 import fc
 import cnn

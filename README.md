@@ -1,8 +1,10 @@
 # Predicting Protein Secondary Structure with Deep Learning
 
+WORK IN PROGRESS 
+
 ## Get Data
 
-run ```bash get_data.bash```. Taken from (delta2323's chainer implementation)[https://github.com/delta2323/BMI219-2017-ProteinFolding].
+run ```bash get_data.bash```. Taken from [delta2323's chainer implementation](https://github.com/delta2323/BMI219-2017-ProteinFolding).
 
 ## Reference
 

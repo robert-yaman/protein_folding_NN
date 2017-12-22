@@ -17,6 +17,6 @@ def fc(recurrent_layer, convolutional_layer, training):
 		tf.nn.dropout(intermediate_layer1, keep_prob), 300)
 
 	with tf.name_scope('logits'):
-		logits = tf.contrib.layers.fully_connected(intermediate_layer2, 8)
+		logits = tf.contrib.layers.fully_connected(intermediate_layer2, 9)
 
 	return logits
