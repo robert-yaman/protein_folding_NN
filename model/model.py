@@ -12,3 +12,5 @@ class ProteinFoldingModel(object):
 		self.rnn_layer = rnn.rnns(self.cnn_layer, training)
 		self.logits = fc.fc(self.rnn_layer, self.cnn_layer, training)
 		self.readout = tf.nn.softmax(self.logits)
+
+		tf.summary.histogram('logits', self.logits)

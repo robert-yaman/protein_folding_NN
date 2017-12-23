@@ -1,42 +1,30 @@
 import tensorflow as tf
 import numpy as np
 
-TRAINING_PATH = "data/cullpdb+profile_6133_filtered.npy"
-TESTING_PATH = "data/cb513+profile_split1.npy"
+# TRAINING_PATH = "data/cullpdb+profile_6133_filtered.npy"
+# TESTING_PATH = "data/cb513+profile_split1.npy"
 
-def get_training_data():
-	np_data = np.load(TRAINING_PATH)
-	np_data = np_data.reshape(len(np_data), 700, 57)
-	features = np_data[0:5022, ..., :22]
+def _decode_line(line):
+	items = tf.decode_csv(line, [[0.0]] * 39900)
+	matrix = tf.reshape(items, [700, 57])
 	# Goes to 31 because there is an extra value in features and labels for 
 	# blanks.
-	labels = np_data[0:5022, ..., 22 : 31]
-	return _dataset(features, labels)
+	return matrix[..., :22], matrix[..., 22:31]
 
-def get_validation_data():
-	np_data = np.load(TRAINING_PATH)
-	np_data = np_data.reshape(len(np_data), 700, 57)
-	features = np_data[5022:, ..., :22]
-	# Goes to 31 because there is an extra value in features and labels for 
-	# blanks.
-	labels = np_data[5022:, ..., 22 : 31]
-	return _dataset(features, labels)
-
-def get_testing_data():
-	np_data = np.load(TESTING_PATH)
-	np_data = np_data.reshape(len(np_data), 700, 57)
-	features = np_data[..., :22]
-	# Goes to 31 because there is an extra value in features and labels for 
-	# blanks.
-	labels = np_data[..., 22 : 31]
-	return _dataset(features, labels)
-
-def _dataset(features, labels):
-	dataset = tf.data.Dataset.from_tensor_slices((features, labels))
-	iterator = dataset.make_one_shot_iterator()
+def get_training_data(path, num_epochs):
+	base_dataset = tf.data.TextLineDataset(path)
+	tr_data = base_dataset.map(_decode_line).repeat(num_epochs)
+	iterator = tr_data.make_one_shot_iterator()
 	next_element = iterator.get_next()
 
-	example = tf.cast(next_element[0], dtype=tf.float32)
-	label = tf.cast(next_element[1], dtype=tf.float32)
+	return next_element
 
-	return example, label
+def get_validation_data(path):
+	base_dataset = tf.data.TextLineDataset(path)
+	val_data = base_dataset.map(_decode_line)
+	# Make an initializable interator so that we can use the whole dataset for
+	# each validation step. 
+	iterator = val_data.make_initializable_iterator()
+	next_element = iterator.get_next()
+
+	return next_element, iterator.initializer
