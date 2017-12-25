@@ -29,7 +29,7 @@ def main(args):
 		training_step = tf.train.AdamOptimizer(.001).minimize(loss)
 
 	training_data, training_labels = data.get_training_data(
-		args.train_files[0], args.num_epochs)
+		args.train_files[0], int(args.num_epochs))
 	validation_step, validation_initializer = data.get_validation_data(
 		args.eval_files[0])
 	(validation_data, validation_labels) = validation_step
