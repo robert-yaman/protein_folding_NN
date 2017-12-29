@@ -10,32 +10,36 @@ sys.path.insert(1, os.path.join(sys.path[0], '..'))
 from model.model import ProteinFoldingModel
 
 def main(args):
-	# Since we are doing batch normalization, we have to keep track of whether
-	# we are training or testing. Also determines dropout probability.
-	training = tf.placeholder(tf.bool, name='training')
-	example = tf.placeholder(tf.float32, [700, 22])
-	labels = tf.placeholder(tf.float32, [700, 9])
-	model = ProteinFoldingModel(example, training)
-	losses = tf.nn.softmax_cross_entropy_with_logits(labels=labels, 
-		logits=model.logits)
-	loss = tf.reduce_mean(losses)
-	tf.summary.scalar('loss', loss)
+	with tf.device('/gpu:0'):
+		# Since we are doing batch normalization, we have to keep track of whether
+		# we are training or testing. Also determines dropout probability.
+		training = tf.placeholder(tf.bool, name='training')
+		example = tf.placeholder(tf.float32, [700, 22])
+		labels = tf.placeholder(tf.float32, [700, 9])
+		model = ProteinFoldingModel(example, training)
+		losses = tf.nn.softmax_cross_entropy_with_logits(labels=labels, 
+			logits=model.logits)
+		loss = tf.reduce_mean(losses)
+		tf.summary.scalar('loss', loss)
 
-	accuracy = validate.accuracy(model.logits, labels)
+		accuracy = validate.accuracy(model.logits, labels)
 
-	# We need to execute update_ops before training for batch normalization.
-	update_ops = tf.get_collection(tf.GraphKeys.UPDATE_OPS)
-	with tf.control_dependencies(update_ops):
-		training_step = tf.train.AdamOptimizer(.001).minimize(loss)
+		# We need to execute update_ops before training for batch normalization.
+		update_ops = tf.get_collection(tf.GraphKeys.UPDATE_OPS)
+		with tf.control_dependencies(update_ops):
+			training_step = tf.train.AdamOptimizer(.001).minimize(loss)
 
-	training_data, training_labels = data.get_training_data(
-		args.train_files[0], int(args.num_epochs))
-	validation_step, validation_initializer = data.get_validation_data(
-		args.eval_files[0])
-	(validation_data, validation_labels) = validation_step
+		training_data, training_labels = data.get_training_data(
+			args.train_files[0], int(args.num_epochs))
+		validation_step, validation_initializer = data.get_validation_data(
+			args.eval_files[0])
+		(validation_data, validation_labels) = validation_step
 
-	summary = tf.summary.merge_all()
-	with tf.Session() as sess:
+		summary = tf.summary.merge_all()
+	with tf.Session(config=tf.ConfigProto(
+      allow_soft_placement=True, log_device_placement=True)) as sess:
+		print "AVAILABLE DEVICES:"
+		print [device.name for device in tf.python.clientdevice_lib.list_local_devices()]
 		print "BEGINNING TRANING..."
 		sess.run(tf.global_variables_initializer())
 		summary_writer = tf.summary.FileWriter(args.job_dir, sess.graph)
@@ -53,7 +57,7 @@ def main(args):
 				print "LOSS: " + str(l)
 
 				# Validation
-				if step % 1000 == 0:
+				if step % 10000 == 0:
 					print "VALIDATING..."
 					sess.run([validation_initializer])
 					losses = []
