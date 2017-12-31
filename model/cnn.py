@@ -7,9 +7,8 @@ def cnns(inputs, training):
 	# Three convolution layers with strides 3,7, and 11. 64 filters each.
 	# Concat at the end for [700, 64*3=192]
 
-	# Add dimensions to the start and end of the tensor for |batch| and 
-	# |channels| params.
-	inputs_expanded = tf.expand_dims(tf.expand_dims(inputs, -1), 0)
+	# Add dimensions to end of the tensor for |channels| params.
+	inputs_expanded = tf.expand_dims(inputs, -1)
 
 	# We can't have different padding styles for different dimensions, we we
 	# manually add padding to dim=0 and use VALID style.
@@ -45,11 +44,11 @@ def cnns(inputs, training):
 
 
 	conv_layers = [conv3_layer, conv7_layer, conv11_layer]
-	conv_layers = [tf.squeeze(layer) for layer in conv_layers]
+	conv_layers = [tf.squeeze(layer, axis=2) for layer in conv_layers]
 	conv_layers = [tf.contrib.layers.batch_norm(layer, center=True, scale=True,
 		is_training=training) for layer in conv_layers]		
 
-	concat_layer = tf.concat(conv_layers, axis=1)
+	concat_layer = tf.concat(conv_layers, axis=2)
 
 	return tf.contrib.layers.batch_norm(concat_layer, center=True, scale=True,
 		is_training=training)

@@ -11,17 +11,18 @@ def _decode_line(line):
 	# blanks.
 	return matrix[..., :22], matrix[..., 22:31]
 
-def get_training_data(path, num_epochs):
+def get_training_data(path, num_epochs, batch_size):
 	base_dataset = tf.data.TextLineDataset(path)
-	tr_data = base_dataset.map(_decode_line).repeat(num_epochs)
+	tr_data = base_dataset.map(_decode_line).batch(batch_size
+		).repeat(num_epochs)
 	iterator = tr_data.make_one_shot_iterator()
 	next_element = iterator.get_next()
 
 	return next_element
 
-def get_validation_data(path):
+def get_validation_data(path, batch_size):
 	base_dataset = tf.data.TextLineDataset(path)
-	val_data = base_dataset.map(_decode_line)
+	val_data = base_dataset.map(_decode_line).batch(batch_size)
 	# Make an initializable interator so that we can use the whole dataset for
 	# each validation step. 
 	iterator = val_data.make_initializable_iterator()

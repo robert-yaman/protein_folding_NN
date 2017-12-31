@@ -5,9 +5,9 @@ def fc(recurrent_layer, convolutional_layer, training):
 	def false_(): return tf.constant(1.0)
 	keep_prob = tf.cond(training, true_, false_)
 
-	# recurrent_layer has shape [700,600]
-	# convolutional_layer has shape [700, 192]
-	combined_layer = tf.concat([recurrent_layer, convolutional_layer], axis=1)
+	# recurrent_layer has shape [batch_size, 700,600]
+	# convolutional_layer has shape [batch_size, 700, 192]
+	combined_layer = tf.concat([recurrent_layer, convolutional_layer], axis=2)
 	with tf.name_scope('final_fc1'):
 		intermediate_layer1 = tf.contrib.layers.fully_connected(
 			tf.nn.dropout(combined_layer, keep_prob), 300)

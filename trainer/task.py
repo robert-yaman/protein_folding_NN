@@ -21,8 +21,8 @@ def main(args):
 		# whether we are training or testing. Also determines dropout 
 		# probability.
 		training = tf.placeholder(tf.bool, name='training')
-		example = tf.placeholder(tf.float32, [700, 22])
-		labels = tf.placeholder(tf.float32, [700, 9])
+		example = tf.placeholder(tf.float32, [None, 700, 22])
+		labels = tf.placeholder(tf.float32, [None, 700, 9])
 		model = MODEL_MAPPING[args.model_num](example, training)
 		losses = tf.nn.softmax_cross_entropy_with_logits(labels=labels, 
 			logits=model.logits)
@@ -38,9 +38,9 @@ def main(args):
 			training_step = tf.train.AdamOptimizer(.001).minimize(loss)
 
 		training_data, training_labels = data.get_training_data(
-			args.train_files[0], args.num_epochs)
+			args.train_files[0], args.num_epochs, args.batch_size)
 		validation_step, validation_initializer = data.get_validation_data(
-			args.eval_files[0])
+			args.eval_files[0], args.batch_size)
 		(validation_data, validation_labels) = validation_step
 
 		summary = tf.summary.merge_all()
@@ -118,6 +118,11 @@ if __name__ == "__main__":
 	)
 	parser.add_argument(
 		'--model-num',
+		type=int,
+		default=1,
+	)
+	parser.add_argument(
+		'--batch-size',
 		type=int,
 		default=1,
 	)
