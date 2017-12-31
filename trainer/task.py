@@ -8,15 +8,22 @@ import validate
 
 sys.path.insert(1, os.path.join(sys.path[0], '..'))
 from model.model import ProteinFoldingModel
+from model2.model2 import ProteinFoldingModel2
+
+MODEL_MAPPING = {
+	1 : ProteinFoldingModel,
+	2 : ProteinFoldingModel2,
+}
 
 def main(args):
 	with tf.device('/gpu:0'):
-		# Since we are doing batch normalization, we have to keep track of whether
-		# we are training or testing. Also determines dropout probability.
+		# Since we are doing batch normalization, we have to keep track of 
+		# whether we are training or testing. Also determines dropout 
+		# probability.
 		training = tf.placeholder(tf.bool, name='training')
 		example = tf.placeholder(tf.float32, [700, 22])
 		labels = tf.placeholder(tf.float32, [700, 9])
-		model = ProteinFoldingModel(example, training)
+		model = MODEL_MAPPING[args.model_num](example, training)
 		losses = tf.nn.softmax_cross_entropy_with_logits(labels=labels, 
 			logits=model.logits)
 		loss = tf.reduce_mean(losses)
@@ -24,13 +31,14 @@ def main(args):
 
 		accuracy = validate.accuracy(model.logits, labels)
 
-		# We need to execute update_ops before training for batch normalization.
+		# We need to execute update_ops before training for batch 
+		# normalization.
 		update_ops = tf.get_collection(tf.GraphKeys.UPDATE_OPS)
 		with tf.control_dependencies(update_ops):
 			training_step = tf.train.AdamOptimizer(.001).minimize(loss)
 
 		training_data, training_labels = data.get_training_data(
-			args.train_files[0], int(args.num_epochs))
+			args.train_files[0], args.num_epochs)
 		validation_step, validation_initializer = data.get_validation_data(
 			args.eval_files[0])
 		(validation_data, validation_labels) = validation_step
@@ -38,8 +46,6 @@ def main(args):
 		summary = tf.summary.merge_all()
 	with tf.Session(config=tf.ConfigProto(
       allow_soft_placement=True, log_device_placement=True)) as sess:
-		print "AVAILABLE DEVICES:"
-		print [device.name for device in tf.python.clientdevice_lib.list_local_devices()]
 		print "BEGINNING TRANING..."
 		sess.run(tf.global_variables_initializer())
 		summary_writer = tf.summary.FileWriter(args.job_dir, sess.graph)
@@ -93,7 +99,7 @@ if __name__ == "__main__":
 		'--train-files',
 		help='GCS or local paths to training data',
 		nargs='+',
-		required=True
+		required=True,
 	)
 	parser.add_argument(
 		'--eval-files',
@@ -103,11 +109,17 @@ if __name__ == "__main__":
 	parser.add_argument(
 		'--job-dir',
 		help='Location to write checkpoints, tensorboard, and models',
-		default="/tmp/"
+		default="/tmp/",
 	)
 	parser.add_argument(
 		'--num-epochs',
-		default=1
+		type=int,
+		default=1,
+	)
+	parser.add_argument(
+		'--model-num',
+		type=int,
+		default=1,
 	)
 
 	main(parser.parse_args())
