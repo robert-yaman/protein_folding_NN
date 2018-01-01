@@ -3,7 +3,7 @@ cd /Users/robertyaman/proteinRNN
 BUCKET_NAME=protein-rnn-data
 REGION=us-central1
 DATE=$(date +"%m%d%y%s")
-JOB_NAME="proteinrnn_train$DATE"
+JOB_NAME="proteinrnn_train_gpu_$DATE"
 TRAIN_DATA=gs://$BUCKET_NAME/data/training_data.csv
 EVAL_DATA=gs://$BUCKET_NAME/data/validation_data.csv
 OUTPUT_PATH=gs://$BUCKET_NAME/$JOB_NAME
@@ -17,5 +17,5 @@ gcloud ml-engine jobs submit training $JOB_NAME \
 -- \
 --train-files $TRAIN_DATA \
 --eval-files $EVAL_DATA \
---num-epochs 2
+--num-epochs 2 \
 --batch-size 256

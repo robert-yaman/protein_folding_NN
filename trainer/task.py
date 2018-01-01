@@ -16,13 +16,13 @@ MODEL_MAPPING = {
 }
 
 def main(args):
+	# Since we are doing batch normalization, we have to keep track of 
+	# whether we are training or testing. Also determines dropout 
+	# probability.
+	training = tf.placeholder(tf.bool, name='training')
+	example = tf.placeholder(tf.float32, [None, 700, 22])
+	labels = tf.placeholder(tf.float32, [None, 700, 9])
 	with tf.device('/gpu:0'):
-		# Since we are doing batch normalization, we have to keep track of 
-		# whether we are training or testing. Also determines dropout 
-		# probability.
-		training = tf.placeholder(tf.bool, name='training')
-		example = tf.placeholder(tf.float32, [None, 700, 22])
-		labels = tf.placeholder(tf.float32, [None, 700, 9])
 		model = MODEL_MAPPING[args.model_num](example, training)
 		losses = tf.nn.softmax_cross_entropy_with_logits(labels=labels, 
 			logits=model.logits)
@@ -43,7 +43,7 @@ def main(args):
 			args.eval_files[0], args.batch_size)
 		(validation_data, validation_labels) = validation_step
 
-		summary = tf.summary.merge_all()
+	summary = tf.summary.merge_all()
 	with tf.Session(config=tf.ConfigProto(
       allow_soft_placement=True, log_device_placement=True)) as sess:
 		print "BEGINNING TRANING..."

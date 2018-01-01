@@ -1,4 +1,4 @@
 *.pyc
 *.csv
-*.tmp*
+*tmp*
 *.npy
