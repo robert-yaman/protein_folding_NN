@@ -70,7 +70,7 @@ def main(args):
 				print "LOSS: " + str(l)
 
 				# Validation
-				if step % 10000 == 0:
+				if step % 100 == 0:
 					print "VALIDATING..."
 					sess.run([validation_initializer])
 					losses = []
