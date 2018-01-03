@@ -1,9 +1,6 @@
 import tensorflow as tf
 import numpy as np
 
-# TRAINING_PATH = "data/cullpdb+profile_6133_filtered.npy"
-# TESTING_PATH = "data/cb513+profile_split1.npy"
-
 def _decode_line(line):
 	items = tf.decode_csv(line, [[0.0]] * 39900)
 	matrix = tf.reshape(items, [700, 57])
