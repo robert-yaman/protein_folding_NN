@@ -4,9 +4,9 @@ import numpy as np
 def _decode_line(line):
 	items = tf.decode_csv(line, [[0.0]] * 39900)
 	matrix = tf.reshape(items, [700, 57])
-	# Goes to 31 because there is an extra value in features and labels for 
-	# blanks.
-	return matrix[..., :22], matrix[..., 22:31]
+	# Labels go to 31 because there is an extra value in features and labels  
+	# for blanks.
+	return matrix[..., :22], matrix[..., 35:57], matrix[..., 22:31]
 
 def get_training_data(path, num_epochs, batch_size):
 	base_dataset = tf.data.TextLineDataset(path)

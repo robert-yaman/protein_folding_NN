@@ -3,7 +3,7 @@ import tensorflow as tf
 NUM_CHANNELS = 64
 
 def cnns(inputs, training):
-	# Inputs is [700, 50]
+	# Inputs is [700, 72]
 	# Three convolution layers with strides 3,7, and 11. 64 filters each.
 	# Concat at the end for [700, 64*3=192]
 
@@ -12,7 +12,7 @@ def cnns(inputs, training):
 
 	# We can't have different padding styles for different dimensions, we we
 	# manually add padding to dim=0 and use VALID style.
-	conv3_filter = tf.get_variable("conv3_filter", [3, 50, 1, NUM_CHANNELS],
+	conv3_filter = tf.get_variable("conv3_filter", [3, 72, 1, NUM_CHANNELS],
 		initializer=tf.truncated_normal_initializer(stddev=.1))
 	inputs_expanded_padding3 = tf.pad(inputs_expanded, 
 		[[0,0],[1,1],[0,0],[0,0]])
@@ -22,7 +22,7 @@ def cnns(inputs, training):
 				initializer=tf.constant_initializer(0.1))
 	conv3_layer = tf.nn.relu(conv3 + conv3_biases)
 
-	conv7_filter = tf.get_variable("conv7_filter", [7, 50, 1, NUM_CHANNELS],
+	conv7_filter = tf.get_variable("conv7_filter", [7, 72, 1, NUM_CHANNELS],
 		initializer=tf.truncated_normal_initializer(stddev=.1))
 	inputs_expanded_padding7 = tf.pad(inputs_expanded, 
 		[[0,0],[3,3],[0,0],[0,0]])
@@ -32,7 +32,7 @@ def cnns(inputs, training):
 				initializer=tf.constant_initializer(0.1))
 	conv7_layer = tf.nn.relu(conv7 + conv7_biases)
 
-	conv11_filter = tf.get_variable("conv11_filter", [11, 50, 1, NUM_CHANNELS],
+	conv11_filter = tf.get_variable("conv11_filter", [11, 72, 1, NUM_CHANNELS],
 		initializer=tf.truncated_normal_initializer(stddev=.1))
 	inputs_expanded_padding11 = tf.pad(inputs_expanded, 
 		[[0,0],[5,5],[0,0],[0,0]])
@@ -41,7 +41,6 @@ def cnns(inputs, training):
 	conv11_biases = tf.get_variable("conv11_biases", [NUM_CHANNELS], 
 				initializer=tf.constant_initializer(0.1))
 	conv11_layer = tf.nn.relu(conv11 + conv11_biases)
-
 
 	conv_layers = [conv3_layer, conv7_layer, conv11_layer]
 	conv_layers = [tf.squeeze(layer, axis=2) for layer in conv_layers]

@@ -20,10 +20,12 @@ def main(args):
 	# whether we are training or testing. Also determines dropout 
 	# probability.
 	training = tf.placeholder(tf.bool, name='training')
-	example = tf.placeholder(tf.float32, [None, 700, 22])
+	example_sequence = tf.placeholder(tf.float32, [None, 700, 22])
+	example_profile = tf.placeholder(tf.float32, [None, 700, 22])
 	labels = tf.placeholder(tf.float32, [None, 700, 9])
 	with tf.device('/gpu:0'):
-		model = MODEL_MAPPING[args.model_num](example, training)
+		model = MODEL_MAPPING[args.model_num](example_sequence, 
+			example_profile, training)
 		losses = tf.nn.softmax_cross_entropy_with_logits(labels=labels, 
 			logits=model.logits)
 		loss = tf.reduce_mean(losses)
@@ -37,11 +39,13 @@ def main(args):
 		with tf.control_dependencies(update_ops):
 			training_step = tf.train.AdamOptimizer(.001).minimize(loss)
 
-		training_data, training_labels = data.get_training_data(
-			args.train_files[0], args.num_epochs, args.batch_size)
+		training_data_sequence, training_data_profile, training_labels = (
+			data.get_training_data(args.train_files[0], args.num_epochs, 
+				args.batch_size))
 		validation_step, validation_initializer = data.get_validation_data(
 			args.eval_files[0], args.batch_size)
-		(validation_data, validation_labels) = validation_step
+		(validation_data_sequence, validation_data_profile, 
+			validation_labels) = validation_step
 
 	summary = tf.summary.merge_all()
 	with tf.Session(config=tf.ConfigProto(
@@ -54,9 +58,12 @@ def main(args):
 			try:
 				step += 1
 				print step
-				itr_ex, itr_label = sess.run([training_data, training_labels])
+				itr_ex_sequence, itr_ex_profile, itr_label = sess.run([
+					training_data_sequence, training_data_profile, 
+					training_labels])
 				_, s, l = sess.run([training_step, summary, loss], 
-					feed_dict={example:itr_ex, labels:itr_label, 
+					feed_dict={example_sequence:itr_ex_sequence,
+					example_profile:itr_ex_profile, labels:itr_label, 
 					training: True})
 				# Log every step for now
 				summary_writer.add_summary(s, step)
@@ -73,10 +80,12 @@ def main(args):
 						print count_val
 						count_val += 1
 						try:
-							val_ex, val_label = sess.run([validation_data, 
-								validation_labels])
+							val_ex_seq, val_ex_prof, val_label = sess.run([
+								validation_data_sequence, 
+								validation_data_profile, validation_labels])
 							_loss, _accuracy = sess.run([loss, accuracy],
-								feed_dict={example:val_ex, labels:val_label, 
+								feed_dict={example_sequence:val_ex_seq, 
+								example_profile:val_ex_prof, labels:val_label, 
 								training:False})
 							losses.append(_loss)
 							accuracies.append(_accuracy)
