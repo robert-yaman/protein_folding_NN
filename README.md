@@ -47,7 +47,5 @@ Li, Z., & Yu, Y. (2016). Protein Secondary Structure Prediction Using Cascaded C
 
 ## TODOS
 
-- Use PSI-BLAST features
 - Take into account solvent accessibility during training and see how much it
 helps the model.
-- Batch for faster training.
