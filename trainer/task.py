@@ -51,6 +51,33 @@ def main(args):
 	with tf.Session(config=tf.ConfigProto(
       allow_soft_placement=True, log_device_placement=True)) as sess:
 		print "BEGINNING TRANING..."
+
+		def validation_pass():
+			print "VALIDATING..."
+			sess.run([validation_initializer])
+			losses = []
+			accuracies = []
+			count_val = 0
+			while True:
+				print count_val
+				count_val += 1
+				try:
+					val_ex_seq, val_ex_prof, val_label = sess.run([
+						validation_data_sequence, 
+						validation_data_profile, validation_labels])
+					_loss, _accuracy = sess.run([loss, accuracy],
+						feed_dict={example_sequence:val_ex_seq, 
+						example_profile:val_ex_prof, labels:val_label, 
+						training:False})
+					losses.append(_loss)
+					accuracies.append(_accuracy)
+				except tf.errors.OutOfRangeError:
+					break
+			total_loss = sum(losses) / float(len(losses))
+			total_accuracy = sum(accuracies) / float(len(accuracies))
+			print " -- TOTAL LOSS: " + str(total_loss)
+			print " -- TOTAL ACCURACY: " + str(total_accuracy)
+
 		sess.run(tf.global_variables_initializer())
 		summary_writer = tf.summary.FileWriter(args.job_dir, sess.graph)
 		step = 0
@@ -70,33 +97,11 @@ def main(args):
 				print "LOSS: " + str(l)
 
 				# Validation
-				if step % 100 == 0:
-					print "VALIDATING..."
-					sess.run([validation_initializer])
-					losses = []
-					accuracies = []
-					count_val = 0
-					while True:
-						print count_val
-						count_val += 1
-						try:
-							val_ex_seq, val_ex_prof, val_label = sess.run([
-								validation_data_sequence, 
-								validation_data_profile, validation_labels])
-							_loss, _accuracy = sess.run([loss, accuracy],
-								feed_dict={example_sequence:val_ex_seq, 
-								example_profile:val_ex_prof, labels:val_label, 
-								training:False})
-							losses.append(_loss)
-							accuracies.append(_accuracy)
-						except tf.errors.OutOfRangeError:
-							break
-					total_loss = sum(losses) / float(len(losses))
-					total_accuracy = sum(accuracies) / float(len(accuracies))
-					print " -- TOTAL LOSS: " + str(total_loss)
-					print " -- TOTAL ACCURACY: " + str(total_accuracy)
+				if step % args.validation_step == 0:
+					validation_pass()
 
 			except tf.errors.OutOfRangeError:
+				validation_pass()
 				print("DONE TRAINING")
 				break
 		
@@ -134,6 +139,11 @@ if __name__ == "__main__":
 		'--batch-size',
 		type=int,
 		default=1,
+	)
+	parser.add_argument(
+		'--validation-step',
+		type=int,
+		default=100,
 	)
 
 	main(parser.parse_args())
