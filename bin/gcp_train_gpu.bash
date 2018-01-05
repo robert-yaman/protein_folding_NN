@@ -18,4 +18,5 @@ gcloud ml-engine jobs submit training $JOB_NAME \
 --train-files $TRAIN_DATA \
 --eval-files $EVAL_DATA \
 --num-epochs 12 \
---batch-size 64
+--batch-size 64 \
+--validation-step 100

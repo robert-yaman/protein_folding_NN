@@ -45,6 +45,12 @@ James A Cuff and Geoffrey J Barton. Evaluation and improvement of multiple seque
 
 Li, Z., & Yu, Y. (2016). Protein Secondary Structure Prediction Using Cascaded Convolutional and Recurrent Neural Networks. arXiv preprint arXiv:1604.07176.
 
+## Results
+
+I trained the model with a batch size of 64 over twelve epochs. Our ending Q8 accuracy was 53%. After about 3 epochs we began to overfit, since we achieved maximum accuracy of 62%, after which point it monotonically decreased.
+
+This is worse than the model in the original paper, possibly because we did not use solvent accessibility in training.
+
 ## TODOS
 
 - Take into account solvent accessibility during training and see how much it
